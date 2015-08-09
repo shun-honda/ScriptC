@@ -11,7 +11,7 @@ Node createNode(int type) {
 
 Node createFuncDefNode(Node name, Node args, Node body) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_FUNCDEF;
+  node->type = SC_FUNCDEF;
   node->child_size = 3;
   node->child = (Node *) calloc(sizeof(struct Node), 3);
   node->child[0] = name;
@@ -110,28 +110,28 @@ Node createUnaryNode(int type, Node child) {
 
 Node createIntNode(int val) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_INT;
+  node->type = SC_INT;
   node->int_val = val;
   return node;
 }
 
 Node createFloatNode(double val) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_FLOAT;
+  node->type = SC_FLOAT;
   node->double_val = val;
   return node;
 }
 
 Node createBoolNode(int val) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_BOOL;
+  node->type = SC_BOOL;
   node->bool_val = val;
   return node;
 }
 
 Node createStringNode(char* str) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_STRING;
+  node->type = SC_STRING;
   node->string = (char *) malloc(strlen(str));
   strcpy(node->string, str);
   return node;
@@ -139,7 +139,7 @@ Node createStringNode(char* str) {
 
 Node createNameNode(const char* name) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_NAME;
+  node->type = SC_NAME;
   node->name = (char *) malloc(strlen(name));
   strcpy(node->name, name);
   return node;
@@ -147,7 +147,7 @@ Node createNameNode(const char* name) {
 
 Node createFuncCallNode(Node name, Node args) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_FUNCCALL;
+  node->type = SC_FUNCCALL;
   node->child_size = 2;
   node->child = (Node *) calloc(sizeof(struct Node), 2);
   node->child[0] = name;
@@ -157,7 +157,7 @@ Node createFuncCallNode(Node name, Node args) {
 
 Node createPrintNode(Node child) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_PRINT;
+  node->type = SC_PRINT;
   node->child_size = 1;
   node->child = (Node *) calloc(sizeof(struct Node), 1);
   node->child[0] = child;
@@ -166,7 +166,7 @@ Node createPrintNode(Node child) {
 
 Node createIfNode(Node cond, Node thenStmt, Node elseStmt) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_IF;
+  node->type = SC_IF;
   node->child_size = 3;
   node->child = (Node *) calloc(sizeof(struct Node), 3);
   node->child[0] = cond;
@@ -177,7 +177,7 @@ Node createIfNode(Node cond, Node thenStmt, Node elseStmt) {
 
 Node createWhileNode(Node cond, Node block) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_WHILE;
+  node->type = SC_WHILE;
   node->child_size = 2;
   node->child = (Node *) calloc(sizeof(struct Node), 2);
   node->child[0] = cond;
@@ -187,7 +187,7 @@ Node createWhileNode(Node cond, Node block) {
 
 Node createForNode(Node first, Node second, Node third, Node block) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_FOR;
+  node->type = SC_FOR;
   node->child_size = 3;
   node->child = (Node *) calloc(sizeof(struct Node), 3);
   node->child[0] = first;
@@ -199,7 +199,7 @@ Node createForNode(Node first, Node second, Node third, Node block) {
 
 Node createBlockNode(Node child) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_BLOCK;
+  node->type = SC_BLOCK;
   node->child_size = 1;
   node->child = (Node *) calloc(sizeof(struct Node), 1);
   node->child[0] = child;
@@ -208,7 +208,7 @@ Node createBlockNode(Node child) {
 
 Node createReturnNode(Node child) {
   Node node = (Node) malloc(sizeof(struct Node));
-  node->type = TINYC_RETURN;
+  node->type = SC_RETURN;
   node->child_size = 1;
   node->child = (Node *) calloc(sizeof(struct Node), 1);
   node->child[0] = child;
@@ -235,22 +235,22 @@ void printNode(Node node, int level) {
   if(node) {
     indent(level);
     switch (node->type) {
-      case TINYC_SOURCE:
+      case SC_SOURCE:
         printf("#Source[\n");
         printList(node->list, level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_INT:
+      case SC_INT:
         printf("#Int[%d]\n", node->int_val);
         break;
-      case TINYC_FLOAT:
+      case SC_FLOAT:
         printf("#Float[%f]\n", node->double_val);
         break;
-      case TINYC_STRING:
+      case SC_STRING:
         printf("#String[%s]\n", node->string);
         break;
-      case TINYC_BOOL:
+      case SC_BOOL:
         if(node->bool_val) {
           printf("#Bool[true]\n");
         }
@@ -258,118 +258,118 @@ void printNode(Node node, int level) {
           printf("#Bool[false]\n");
         }
         break;
-      case TINYC_ADD:
+      case SC_ADD:
         printf("#Add[\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_SUB:
+      case SC_SUB:
         printf("#Sub[\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_MUL:
+      case SC_MUL:
         printf("#Mul[\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_DIV:
+      case SC_DIV:
         printf("#Div[\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_PLUS:
+      case SC_PLUS:
         printf("#Plus[\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_MINUS:
+      case SC_MINUS:
         printf("#Minus\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_ASSIGNADD:
+      case SC_ASSIGNADD:
         printf("#AddEq\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_ASSIGNSUB:
+      case SC_ASSIGNSUB:
         printf("#SubEq\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_ASSIGNMUL:
+      case SC_ASSIGNMUL:
         printf("#MulEq\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_ASSIGNDIV:
+      case SC_ASSIGNDIV:
         printf("#DivEq\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_INC:
+      case SC_INC:
         printf("#Inc\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_DEC:
+      case SC_DEC:
         printf("#Dec\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_LT:
+      case SC_LT:
         printf("#LT\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_GT:
+      case SC_GT:
         printf("#GT\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_LE:
+      case SC_LE:
         printf("#LE\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_GE:
+      case SC_GE:
         printf("#GE\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_EQ:
+      case SC_EQ:
         printf("#EQ\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_FUNCDEF:
+      case SC_FUNCDEF:
         printf("#FuncDef\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
@@ -377,42 +377,42 @@ void printNode(Node node, int level) {
         indent(level);
         printf("]\n");
         break;
-      case TINYC_ARGS:
+      case SC_ARGS:
         printf("#Args[\n");
         printList(node->list, level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_STATEMENTLIST:
+      case SC_STATEMENTLIST:
         printf("#List[\n");
         printList(node->list, level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_NAME:
+      case SC_NAME:
         printf("#Name[%s]\n", node->name);
         break;
-      case TINYC_ASSIGN:
+      case SC_ASSIGN:
         printf("#Assign[\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_FUNCCALL:
+      case SC_FUNCCALL:
         printf("#FuncCall\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_PRINT:
+      case SC_PRINT:
         printf("#Print[\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_IF:
+      case SC_IF:
         printf("#If[\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
@@ -420,16 +420,16 @@ void printNode(Node node, int level) {
         indent(level);
         printf("]\n");
         break;
-      case TINYC_ELSE:
+      case SC_ELSE:
         break;
-      case TINYC_WHILE:
+      case SC_WHILE:
         printf("#While\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_FOR:
+      case SC_FOR:
         printf("#For[\n");
         printNode(node->child[0], level+1);
         printNode(node->child[1], level+1);
@@ -438,22 +438,22 @@ void printNode(Node node, int level) {
         indent(level);
         printf("]\n");
         break;
-      case TINYC_BLOCK:
+      case SC_BLOCK:
         printf("#Block[\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_RETURN:
+      case SC_RETURN:
         printf("#Return[\n");
         printNode(node->child[0], level+1);
         indent(level);
         printf("]\n");
         break;
-      case TINYC_BREAK:
+      case SC_BREAK:
         printf("#Break[]\n");
         break;
-      case TINYC_CONTINUE:
+      case SC_CONTINUE:
         printf("#Continue[]\n");
         break;
     }

@@ -39,7 +39,7 @@ Program
   ;
 
 Source
-  : Statement {$$ = createListNode(TINYC_SOURCE, $1);}
+  : Statement {$$ = createListNode(SC_SOURCE, $1);}
   | Source Statement { appendList($1->list, $2); $$ = $1; }
   ;
 
@@ -66,11 +66,11 @@ PrintStatement
   ;
 
 BreakStatement
-  : BREAK ';' {$$ = createNode(TINYC_BREAK);}
+  : BREAK ';' {$$ = createNode(SC_BREAK);}
   ;
 
 ContinueStatement
-  : CONTINUE ';' {$$ = createNode(TINYC_CONTINUE);}
+  : CONTINUE ';' {$$ = createNode(SC_CONTINUE);}
   ;
 
 CompoundStatement
@@ -108,12 +108,12 @@ FunctionBody
   ;
 
 StatementList
-  : Statement {$$ = createListNode(TINYC_STATEMENTLIST, $1);}
+  : Statement {$$ = createListNode(SC_STATEMENTLIST, $1);}
   | StatementList Statement { appendList($1->list, $2); $$ = $1; }
   ;
 
 Arguments
-  : IDENTIFIER {$$ = createListNode(TINYC_ARGS, $1);}
+  : IDENTIFIER {$$ = createListNode(SC_ARGS, $1);}
   | Arguments ',' IDENTIFIER { appendList($1->list, $3); $$ = $1; }
   ;
 
@@ -127,44 +127,44 @@ Expression
   ;
 
 AssignmentExpression
-  : AssignmentExpression '=' CompExpression {$$ = createExprNode(TINYC_ASSIGN, $1, $3);}
-  | AssignmentExpression ADDEQ CompExpression {$$ = createExprNode(TINYC_ASSIGNADD, $1, $3);}
-  | AssignmentExpression SUBEQ CompExpression {$$ = createExprNode(TINYC_ASSIGNSUB, $1, $3);}
-  | AssignmentExpression MULEQ CompExpression {$$ = createExprNode(TINYC_ASSIGNMUL, $1, $3);}
-  | AssignmentExpression DIVEQ CompExpression {$$ = createExprNode(TINYC_ASSIGNDIV, $1, $3);}
+  : AssignmentExpression '=' CompExpression {$$ = createExprNode(SC_ASSIGN, $1, $3);}
+  | AssignmentExpression ADDEQ CompExpression {$$ = createExprNode(SC_ASSIGNADD, $1, $3);}
+  | AssignmentExpression SUBEQ CompExpression {$$ = createExprNode(SC_ASSIGNSUB, $1, $3);}
+  | AssignmentExpression MULEQ CompExpression {$$ = createExprNode(SC_ASSIGNMUL, $1, $3);}
+  | AssignmentExpression DIVEQ CompExpression {$$ = createExprNode(SC_ASSIGNDIV, $1, $3);}
   | CompExpression {$$ = $1;}
   ;
 
 CompExpression
-  : CompExpression '<' ArithExpr {$$ = createExprNode(TINYC_LT, $1, $3);}
-  | CompExpression '>' ArithExpr {$$ = createExprNode(TINYC_GT, $1, $3);}
-  | CompExpression EQ ArithExpr {$$ = createExprNode(TINYC_EQ, $1, $3);}
-  | CompExpression LE ArithExpr {$$ = createExprNode(TINYC_LE, $1, $3);}
-  | CompExpression GE ArithExpr {$$ = createExprNode(TINYC_GE, $1, $3);}
+  : CompExpression '<' ArithExpr {$$ = createExprNode(SC_LT, $1, $3);}
+  | CompExpression '>' ArithExpr {$$ = createExprNode(SC_GT, $1, $3);}
+  | CompExpression EQ ArithExpr {$$ = createExprNode(SC_EQ, $1, $3);}
+  | CompExpression LE ArithExpr {$$ = createExprNode(SC_LE, $1, $3);}
+  | CompExpression GE ArithExpr {$$ = createExprNode(SC_GE, $1, $3);}
   | ArithExpr {$$ = $1;}
   ;
 
 ArithExpr
-  : ArithExpr '+' Term {$$ = createArithNode(TINYC_ADD, $1, $3);}
-  | ArithExpr '-' Term {$$ = createArithNode(TINYC_SUB, $1, $3);}
+  : ArithExpr '+' Term {$$ = createArithNode(SC_ADD, $1, $3);}
+  | ArithExpr '-' Term {$$ = createArithNode(SC_SUB, $1, $3);}
   | Term {$$ = $1;}
   ;
 
 Term
-  : Term '*' Factor {$$ = createArithNode(TINYC_MUL, $1, $3);}
-  | Term '/' Factor {$$ = createArithNode(TINYC_DIV, $1, $3);}
+  : Term '*' Factor {$$ = createArithNode(SC_MUL, $1, $3);}
+  | Term '/' Factor {$$ = createArithNode(SC_DIV, $1, $3);}
   | Factor {$$ = $1;}
   ;
 
 Factor
   : PostfixExpression {$$ = $1;}
-  | '+' Factor {$$ = createUnaryNode(TINYC_PLUS, $2);}
-  | '-' Factor {$$ = createUnaryNode(TINYC_MINUS, $2);}
+  | '+' Factor {$$ = createUnaryNode(SC_PLUS, $2);}
+  | '-' Factor {$$ = createUnaryNode(SC_MINUS, $2);}
   ;
 
 PostfixExpression
-  : PostfixExpression INC {$$ = createUnaryNode(TINYC_INC, $1);}
-  | PostfixExpression DEC {$$ = createUnaryNode(TINYC_DEC, $1);}
+  : PostfixExpression INC {$$ = createUnaryNode(SC_INC, $1);}
+  | PostfixExpression DEC {$$ = createUnaryNode(SC_DEC, $1);}
   | Literal {$$ = $1;}
   ;
 
@@ -200,7 +200,7 @@ FunctionCall
   : IDENTIFIER '(' CallArgs ')' {$$ = createFuncCallNode($1, $3);}
 
 CallArgs
-  : AssignmentExpression {$$ = createListNode(TINYC_ARGS, $1);}
+  : AssignmentExpression {$$ = createListNode(SC_ARGS, $1);}
   | CallArgs ',' AssignmentExpression { appendList($1->list, $3); $$ = $1; }
   ;
 

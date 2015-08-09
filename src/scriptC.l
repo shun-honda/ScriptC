@@ -41,7 +41,7 @@ space [ \t\n]*
 "<" return '<';
 ">" return '>';
 "=" return '=';
-"None" { yylval.node = createNode(TINYC_NONE); return NONE; }
+"None" { yylval.node = createNode(SC_NONE); return NONE; }
 "true" { yylval.node = createBoolNode(1); return TRUE;}
 "false" { yylval.node = createBoolNode(0); return FALSE;}
 "print" {return PRINT;}
