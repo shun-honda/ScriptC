@@ -14,15 +14,6 @@ struct VarEntry {
   char* name;
 };
 
-#define VAR_MAX 128
-struct CompilerContext {
-  struct VarEntry** vars;
-  int var_count;
-};
-
-typedef struct CompilerContext* CompilerContext;
-typedef struct VarEntry* VarEntry;
-
 static CompilerContext c_context;
 
 VarEntry getVarEntry(char* name) {
@@ -242,7 +233,10 @@ InstList convertFUNCCALL(Node node, InstList list) {
 }
 
 InstList convertPRINT(Node node, InstList list) {
-  return NULL;
+  list = convert(node->child[0], list);
+  ScriptCInstruction inst = createInstruction(Iwrite);
+  list = createInstList(list, inst);
+  return list;
 }
 
 InstList convertIF(Node node, InstList list) {
@@ -321,15 +315,18 @@ InstList convertDEC(Node node, InstList list) {
   return NULL;
 }
 
-ScriptCInstruction* createISeq(InstList list) {
+ScriptCInstruction createISeq(InstList list) {
   int size = id;
-  ScriptCInstruction* insts = (ScriptCInstruction*)malloc(sizeof(ScriptCInstruction)*size);
+  c_context->code_length = size;
+  ScriptCInstruction insts = (ScriptCInstruction)malloc(sizeof(struct ScriptCInstruction)*size);
+  ScriptCInstruction root = insts;
   for(int i = 0; i < size; i++) {
-    insts[i] = list->inst;
-    dumpInstruction(insts[i], i);
+    insts = list->inst;
+    dumpInstruction(insts, i);
     list = list->next;
+    insts++;
   }
-  return insts;
+  return root;
 }
 
 typedef InstList (*convert_to_lir_func_t)(Node, InstList);
@@ -342,11 +339,15 @@ static inline InstList convert(Node node, InstList list) {
   return f_convert[node->type](node, list);
 }
 
-ScriptCInstruction* compile(Node node) {
-  InstList list = createInstList(NULL, createInstruction(Iexit));
+CompilerContext createCompilerContext() {
   c_context = (CompilerContext) malloc(sizeof(struct CompilerContext));
   c_context->vars = (VarEntry*)malloc(sizeof(VarEntry)*VAR_MAX);
   c_context->var_count = 0;
+  return c_context;
+}
+
+ScriptCInstruction compile(Node node) {
+  InstList list = createInstList(NULL, createInstruction(Iexit));
   f_convert[node->type](node, list);
   return createISeq(list);
 }

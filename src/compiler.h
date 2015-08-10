@@ -1,6 +1,18 @@
 #ifndef __COMPILER__
 #define __COMPILER__
 
+#include "ast.h"
+
+#define VAR_MAX 128
+struct CompilerContext {
+  struct VarEntry** vars;
+  int var_count;
+  long code_length;
+};
+
+typedef struct CompilerContext* CompilerContext;
+typedef struct VarEntry* VarEntry;
+
 struct ScriptCInstruction {
   int op;
   const void* addr;
@@ -24,6 +36,7 @@ struct InstList {
 typedef struct ScriptCInstruction* ScriptCInstruction;
 typedef struct InstList* InstList;
 
-ScriptCInstruction* compile(Node node);
+CompilerContext createCompilerContext();
+ScriptCInstruction compile(Node node);
 
 #endif
