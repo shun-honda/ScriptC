@@ -9,6 +9,7 @@ struct ScriptCInstruction {
     double double_val;
     char* string;
     int bool_val;
+    int var_id;
     struct ScriptCInstruction* jump;
   };
 };
@@ -23,6 +24,6 @@ struct InstList {
 typedef struct ScriptCInstruction* ScriptCInstruction;
 typedef struct InstList* InstList;
 
-ScriptCInstruction* compile(Node node, InstList list);
+ScriptCInstruction* compile(Node node);
 
 #endif

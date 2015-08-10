@@ -39,4 +39,21 @@ enum nezvm_opcode {
   OP_ERROR = -1
 };
 
+union Type {
+	int int_val;
+	double double_val;
+	char* string;
+	int bool_val;
+};
+
+struct VMContext {
+	union Type** var_list;
+	union Type** stack_pointer;
+	union Type* stack_pointer_base;
+	struct VMContext* prev;
+}
+
+typedef union Type* Type;
+typedef struct VMContext* VMContext;
+
 #endif

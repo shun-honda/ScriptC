@@ -249,7 +249,7 @@ int main(int argc, char *const argv[])
     }
 
     printNode(ast, 0);
-    compile(ast, NULL);
+    ScriptCInstruction* insts = compile(ast);
     disposeNode(ast);
     return 0;
 }
