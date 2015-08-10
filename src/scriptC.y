@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include "ast.h"
+#include "compiler.h"
+#include "vm.h"
 #define YYDEBUG 1
 
 Node ast;
@@ -247,6 +249,7 @@ int main(int argc, char *const argv[])
     }
 
     printNode(ast, 0);
+    compile(ast, NULL);
     disposeNode(ast);
     return 0;
 }
