@@ -55,10 +55,10 @@ struct Type {
 };
 
 struct VMContext {
-	struct Type** var_list;
-	struct Type** var_list_base;
-	struct Type** stack_pointer;
-	struct Type** stack_pointer_base;
+	struct Type* var_list;
+	struct Type* var_list_base;
+	struct Type* stack_pointer;
+	struct Type* stack_pointer_base;
 	struct VMContext* prev;
 };
 

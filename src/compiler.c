@@ -321,10 +321,9 @@ ScriptCInstruction createISeq(InstList list) {
   ScriptCInstruction insts = (ScriptCInstruction)malloc(sizeof(struct ScriptCInstruction)*size);
   ScriptCInstruction root = insts;
   for(int i = 0; i < size; i++) {
-    insts = list->inst;
-    dumpInstruction(insts, i);
+    insts[i] = *list->inst;
+    dumpInstruction(&insts[i], i);
     list = list->next;
-    insts++;
   }
   return root;
 }
