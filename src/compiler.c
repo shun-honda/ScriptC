@@ -95,6 +95,10 @@ static void dumpInstruction(ScriptCInstruction inst, int index) {
       fprintf(stderr, "%d", inst->var_id);
       break;
     }
+    OP_DUMPCASE(storel) {
+      fprintf(stderr, "%d", inst->var_id);
+      break;
+    }
   default:
     break;
   }
@@ -325,6 +329,7 @@ ScriptCInstruction createISeq(InstList list) {
     dumpInstruction(&insts[i], i);
     list = list->next;
   }
+  fprintf(stderr, "\n");
   return root;
 }
 
