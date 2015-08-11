@@ -3,15 +3,20 @@
 
 #include "ast.h"
 
-#define VAR_MAX 128
-struct CompilerContext {
-  struct VarEntry** vars;
-  int var_count;
-  long code_length;
+struct VarEntry {
+  int id;
+  char* name;
 };
 
-typedef struct CompilerContext* CompilerContext;
+struct FuncEntry {
+  int id;
+  int entry_point;
+  char* name;
+  int arg_size;
+};
+
 typedef struct VarEntry* VarEntry;
+typedef struct FuncEntry* FuncEntry;
 
 struct ScriptCInstruction {
   int op;
@@ -22,6 +27,8 @@ struct ScriptCInstruction {
     char* string;
     int bool_val;
     int var_id;
+    int func_id;
+    long call_point;
     struct ScriptCInstruction* jump;
   };
 };
@@ -33,10 +40,36 @@ struct InstList {
   struct ScriptCInstruction* inst;
 };
 
+#define VAR_MAX 128
+#define FUNC_MAX 128
+struct CompilerContext {
+  int ret;
+  struct VarEntry** vars;
+  struct FuncEntry** funcs;
+  int var_count;
+  int func_count;
+  long code_length;
+  struct CompilerContext* prev;
+  struct InstList* root;
+  struct InstList* list;
+  int id;
+};
+
+#define CC_MAX 128
+struct Module {
+  int size;
+  struct CompilerContext** ctxList;
+  long* codePoints;
+};
+
+typedef struct CompilerContext* CompilerContext;
 typedef struct ScriptCInstruction* ScriptCInstruction;
 typedef struct InstList* InstList;
+typedef struct Module* Module;
 
-CompilerContext createCompilerContext();
+void createModule();
+CompilerContext createCompilerContext(CompilerContext prev);
+CompilerContext disposeCompilerContext(CompilerContext ctx);
 ScriptCInstruction compile(Node node);
 
 #endif

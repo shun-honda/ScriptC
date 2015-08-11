@@ -7,22 +7,25 @@
 
 #define VM_CONTEXT_MAX_STACK_LENGTH 1024
 
-VMContext createVMContext(VMContext prev) {
+VMContext createVMContext(VMContext prev, long retPoint) {
   VMContext ctx = (VMContext)malloc(sizeof(struct VMContext));
   ctx->var_list_base = (Type)malloc(sizeof(struct Type)*VAR_MAX);
   ctx->var_list = &ctx->var_list_base[0];
   ctx->stack_pointer_base = (Type)malloc(sizeof(struct Type)*VM_CONTEXT_MAX_STACK_LENGTH);
   ctx->stack_pointer = &ctx->stack_pointer_base[0];
   ctx->prev = prev;
+  ctx->retPoint = retPoint;
   return ctx;
 }
 
-VMContext disposeVMContext(VMContext ctx) {
+void disposeVMContext(VMContext ctx) {
   free(ctx->var_list_base);
   free(ctx->stack_pointer_base);
-  VMContext prev = ctx->prev;
   free(ctx);
-  return prev;
+}
+
+static inline VMContext call_back(VMContext ctx) {
+  return ctx->prev;
 }
 
 void prepareVM(VMContext ctx, ScriptCInstruction inst, long code_length) {
@@ -61,6 +64,7 @@ static inline Type pop_sp(VMContext ctx) {
   return --ctx->stack_pointer;
 }
 
+#define JUMP(dst) goto *GET_ADDR(pc = dst)
 #define GET_ADDR(PC) (PC)->addr
 #define DISPATCH_NEXT goto *GET_ADDR(++pc)
 
@@ -85,10 +89,33 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
     return 0;
   }
   OP(call) {
-
+    ctx = createVMContext(ctx, pc-inst+1);
+    JUMP(inst + pc->call_point);
   }
   OP(ret) {
-
+    long retPoint = ctx->retPoint;
+    Type top = pop_sp(ctx);
+    ctx = call_back(ctx);
+    if(top->type == TYPE_INT) {
+      push_i(ctx, top->int_val);
+    } else if(top->type == TYPE_FLOAT) {
+      push_d(ctx, top->double_val);
+    } else if(top->type == TYPE_STRING) {
+      push_s(ctx, top->string);
+    } else if(top->type == TYPE_BOOL) {
+      push_b(ctx, top->bool_val);
+    } else {
+      fprintf(stderr, "type error of return statement\n");
+      return 1;
+    }
+    disposeVMContext(ctx);
+    JUMP(inst + retPoint);
+  }
+  OP(ret_void) {
+    long retPoint = ctx->retPoint;
+    ctx = call_back(ctx);
+    disposeVMContext(ctx);
+    JUMP(inst + retPoint);
   }
   OP(iconst) {
     push_i(ctx, pc->int_val);
@@ -217,7 +244,21 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
     DISPATCH_NEXT;
   }
   OP(storea) {
-
+    Type val = ctx->var_list+pc->var_id;
+    Type top = pop_sp(ctx->prev);
+    if(top->type == TYPE_INT) {
+      val->int_val = top->int_val;
+    } else if(top->type == TYPE_FLOAT) {
+      val->double_val = top->double_val;
+    } else if(top->type == TYPE_STRING) {
+      val->string = top->string;
+    } else if(top->type == TYPE_BOOL) {
+      val->bool_val = top->bool_val;
+    } else {
+      fprintf(stderr, "type error of storel\n");
+      return 1;
+    }
+    DISPATCH_NEXT;
   }
   OP(storel) {
     Type val = ctx->var_list+pc->var_id;

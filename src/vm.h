@@ -5,6 +5,7 @@
 	OP(exit)\
 	OP(call)\
 	OP(ret)\
+	OP(ret_void)\
 	OP(iconst)\
   OP(dconst)\
   OP(sconst)\
@@ -60,13 +61,14 @@ struct VMContext {
 	struct Type* stack_pointer;
 	struct Type* stack_pointer_base;
 	struct VMContext* prev;
+	long retPoint;
 };
 
 typedef struct Type* Type;
 typedef struct VMContext* VMContext;
 
-VMContext createVMContext(VMContext prev);
-VMContext disposeVMContext(VMContext ctx);
+VMContext createVMContext(VMContext prev, long retPoint);
+void disposeVMContext(VMContext ctx);
 void prepareVM(VMContext ctx, ScriptCInstruction inst, long code_length);
 long vm_execute(VMContext ctx, ScriptCInstruction inst);
 

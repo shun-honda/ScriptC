@@ -1,5 +1,5 @@
 scriptC:	lex.yy.c y.tab.c
-	gcc y.tab.c lex.yy.c ast.c compiler.c vm.c -o scriptC -g
+	gcc -std=c99 y.tab.c lex.yy.c ast.c compiler.c vm.c -o scriptC -g
 y.tab.c:	scriptC.y
 	yacc -dv scriptC.y
 lex.yy.c:	scriptC.l

@@ -249,12 +249,12 @@ int main(int argc, char *const argv[])
     }
 
     printNode(ast, 0);
-    CompilerContext cctx = createCompilerContext();
+    createModule();
+    CompilerContext cctx = createCompilerContext(NULL);
     ScriptCInstruction insts = compile(ast);
-    VMContext ctx = createVMContext(NULL);
+    VMContext ctx = createVMContext(NULL, 0);
     prepareVM(ctx, insts, cctx->code_length);
     vm_execute(ctx, insts);
     disposeNode(ast);
-    disposeVMContext(ctx);
     return 0;
 }

@@ -7,14 +7,8 @@
 #include <assert.h>
 #include <string.h>
 
-int id = 0;
-
-struct VarEntry {
-  int id;
-  char* name;
-};
-
 static CompilerContext c_context;
+static Module module;
 
 VarEntry getVarEntry(char* name) {
   for(int i = 0; i < c_context->var_count; i++) {
@@ -35,6 +29,36 @@ void setVarEntry(char* name) {
   }
 }
 
+int containsFunc(char* name) {
+  for(int i = 0; i < c_context->func_count; i++) {
+    if(!strcmp(name, c_context->funcs[i]->name)) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+FuncEntry getFuncEntry(char* name) {
+  for(int i = 0; i < c_context->func_count; i++) {
+    if(!strcmp(name, c_context->funcs[i]->name)) {
+      return c_context->funcs[i];
+    }
+  }
+  return NULL;
+}
+
+void setFuncEntry(char* name, int arg_size) {
+  c_context->funcs[c_context->func_count] = (FuncEntry)malloc(sizeof(struct FuncEntry));
+  c_context->funcs[c_context->func_count]->name = name;
+  c_context->funcs[c_context->func_count]->id = module->size;
+  c_context->funcs[c_context->func_count]->entry_point = c_context->id;
+  c_context->funcs[c_context->func_count]->arg_size = arg_size;
+  c_context->func_count++;
+  if((c_context->func_count % FUNC_MAX) == 0) {
+    c_context->vars = (VarEntry*)realloc(c_context->funcs, sizeof(c_context->funcs)*2);
+  }
+}
+
 ScriptCInstruction createInstruction(int op) {
   ScriptCInstruction inst = (ScriptCInstruction) malloc(sizeof(struct ScriptCInstruction));
   inst->op = op;
@@ -43,7 +67,7 @@ ScriptCInstruction createInstruction(int op) {
 
 InstList createInstList(InstList prev, ScriptCInstruction inst) {
   InstList list = (InstList)malloc(sizeof(struct InstList));
-  list->index = id++;
+  list->index = c_context->id++;
   list->prev = prev;
   list->next = NULL;
   list->inst = inst;
@@ -99,117 +123,151 @@ static void dumpInstruction(ScriptCInstruction inst, int index) {
       fprintf(stderr, "%d", inst->var_id);
       break;
     }
+    OP_DUMPCASE(call) {
+      fprintf(stderr, "%ld", inst->call_point);
+      break;
+    }
   default:
     break;
   }
   fprintf(stderr, "\n");
 }
 
-static inline InstList convert(Node node, InstList list);
+static inline void convert(Node node);
 
-InstList convertNONE(Node node, InstList list) {
-  return list;
+void convertNONE(Node node) {
 }
 
-InstList convertINT(Node node, InstList list) {
+void convertINT(Node node) {
   ScriptCInstruction inst = createInstruction(Iiconst);
   inst->int_val = node->int_val;
-  return createInstList(list, inst);
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertFLOAT(Node node, InstList list) {
+void convertFLOAT(Node node) {
   ScriptCInstruction inst = createInstruction(Idconst);
   inst->double_val = node->double_val;
-  return createInstList(list, inst);
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertSTRING(Node node, InstList list) {
+void convertSTRING(Node node) {
   ScriptCInstruction inst = createInstruction(Isconst);
   inst->string = node->string;
-  return createInstList(list, inst);
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertBOOL(Node node, InstList list) {
+void convertBOOL(Node node) {
   ScriptCInstruction inst = createInstruction(Ibconst);
   inst->bool_val = node->bool_val;
-  return createInstList(list, inst);
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertADD(Node node, InstList list) {
-  list = convert(node->child[0], list);
-  list = convert(node->child[1], list);
+void convertADD(Node node) {
+  convert(node->child[0]);
+  convert(node->child[1]);
   ScriptCInstruction inst = createInstruction(Iadd);
-  list = createInstList(list, inst);
-  return list;
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertSUB(Node node, InstList list) {
-  list = convert(node->child[0], list);
-  list = convert(node->child[1], list);
+void convertSUB(Node node) {
+  convert(node->child[0]);
+  convert(node->child[1]);
   ScriptCInstruction inst = createInstruction(Isub);
-  list = createInstList(list, inst);
-  return list;
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertMUL(Node node, InstList list) {
-  list = convert(node->child[0], list);
-  list = convert(node->child[1], list);
+void convertMUL(Node node) {
+  convert(node->child[0]);
+  convert(node->child[1]);
   ScriptCInstruction inst = createInstruction(Imul);
-  list = createInstList(list, inst);
-  return list;
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertDIV(Node node, InstList list) {
-  list = convert(node->child[0], list);
-  list = convert(node->child[1], list);
+void convertDIV(Node node) {
+  convert(node->child[0]);
+  convert(node->child[1]);
   ScriptCInstruction inst = createInstruction(Idiv);
-  list = createInstList(list, inst);
-  return list;
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertPLUS(Node node, InstList list) {
-  list = convert(node->child[0], list);
-  return list;
+void convertPLUS(Node node) {
+  convert(node->child[0]);
 }
 
-InstList convertMINUS(Node node, InstList list) {
-  list = convert(node->child[0], list);
+void convertMINUS(Node node) {
+  convert(node->child[0]);
   ScriptCInstruction inst = createInstruction(Iminus);
-  list = createInstList(list, inst);
-  return list;
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertFUNCDEF(Node node, InstList list) {
-  return NULL;
-}
-
-InstList convertARGS(Node node, InstList list) {
-  return NULL;
-}
-
-InstList convertSTATEMENTLIST(Node node, InstList list) {
-  return NULL;
-}
-
-InstList convertNAME(Node node, InstList list) {
-  VarEntry var = getVarEntry(node->name);
-  if(var) {
-    ScriptCInstruction inst = createInstruction(Iloadl);
-    inst->var_id = var->id;
-    list = createInstList(list, inst);
-  } else {
-    fprintf(stderr, "Error: variable not found (%s)\n", node->name);
-    exit(1);
+int countListSize(List list) {
+  int count = 0;
+  ListEntry entry = list->elements;
+  for(; entry; entry = entry->next) {
+    count++;
   }
-  return list;
+  return count;
 }
 
-InstList convertASSIGN(Node node, InstList list) {
+void convertFUNCDEF(Node node) {
   if(node->child[0]->type != SC_NAME) {
     fprintf(stderr, "Error: first argument of assign expression is expected name node\n");
     exit(1);
   }
-  list = convert(node->child[1], list);
+  if(containsFunc(node->child[0]->name)) {
+    fprintf(stderr, "function '%s' is re-defined\n", node->child[0]->name);
+    exit(1);
+  }
+  Node args = node->child[1];
+  int count = countListSize(args->list);
+  setFuncEntry(node->child[0]->name, count);
+  createCompilerContext(c_context);
+  ListEntry entry = args->list->elements;
+  for(; entry; entry = entry->next) {
+    ScriptCInstruction inst = createInstruction(Istorea);
+    inst->var_id = c_context->var_count;
+    setVarEntry(entry->node->name);
+    c_context->list = createInstList(c_context->list, inst);
+    if(c_context->root == NULL) {
+      c_context->root = c_context->list;
+    }
+  }
+  convert(node->child[2]);
+  if(!c_context->ret) {
+    ScriptCInstruction inst = createInstruction(Iret_void);
+    c_context->list = createInstList(c_context->list, inst);
+  }
+  c_context = disposeCompilerContext(c_context);
+}
+
+void convertARGS(Node node) {
+}
+
+void convertSTATEMENTLIST(Node node) {
+  ListEntry entry = node->list->elements;
+  for(; entry; entry = entry->next) {
+    convert(entry->node);
+  }
+}
+
+void convertNAME(Node node) {
+  VarEntry var = getVarEntry(node->name);
+  if(var) {
+    ScriptCInstruction inst = createInstruction(Iloadl);
+    inst->var_id = var->id;
+    c_context->list = createInstList(c_context->list, inst);
+  } else {
+    fprintf(stderr, "Error: variable not found (%s)\n", node->name);
+    exit(1);
+  }
+}
+
+void convertASSIGN(Node node) {
+  if(node->child[0]->type != SC_NAME) {
+    fprintf(stderr, "Error: first argument of assign expression is expected name node\n");
+    exit(1);
+  }
+  convert(node->child[1]);
   ScriptCInstruction inst = createInstruction(Istorel);
   VarEntry var = getVarEntry(node->child[0]->name);
   if(var) {
@@ -218,140 +276,206 @@ InstList convertASSIGN(Node node, InstList list) {
     inst->var_id = c_context->var_count;
     setVarEntry(node->child[0]->name);
   }
-  list = createInstList(list, inst);
-  return list;
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertSOURCE(Node node, InstList list) {
+void convertSOURCE(Node node) {
   if(node->list) {
     ListEntry entry = node->list->elements;
     for(;entry; entry = entry->next) {
-      list = convert(entry->node, list);
+      convert(entry->node);
     }
   }
-  return list;
 }
 
-InstList convertFUNCCALL(Node node, InstList list) {
-  return NULL;
+void convertFUNCCALL(Node node) {
+  if(node->child[0]->type != SC_NAME) {
+    fprintf(stderr, "Error: first argument of assign expression is expected name node\n");
+    exit(1);
+  }
+  FuncEntry func = getFuncEntry(node->child[0]->name);
+  Node args = node->child[1];
+  ListEntry entry = args->list->elements;
+  while(entry->next) {
+    entry = entry->next;
+  }
+  for(; entry; entry = entry->prev) {
+    convert(entry->node);
+  }
+  ScriptCInstruction inst = createInstruction(Icall);
+  inst->func_id = func->id;
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertPRINT(Node node, InstList list) {
-  list = convert(node->child[0], list);
+void convertPRINT(Node node) {
+  convert(node->child[0]);
   ScriptCInstruction inst = createInstruction(Iwrite);
-  list = createInstList(list, inst);
-  return list;
+  c_context->list = createInstList(c_context->list, inst);
 }
 
-InstList convertIF(Node node, InstList list) {
-  return NULL;
+void convertIF(Node node) {
+
 }
 
-InstList convertELSE(Node node, InstList list) {
-  return NULL;
+void convertELSE(Node node) {
+
 }
 
-InstList convertWHILE(Node node, InstList list) {
-  return NULL;
+void convertWHILE(Node node) {
+
 }
 
-InstList convertBLOCK(Node node, InstList list) {
-  return NULL;
+void convertBLOCK(Node node) {
+
 }
 
-InstList convertRETURN(Node node, InstList list) {
-  return NULL;
+void convertRETURN(Node node) {
+  convert(node->child[0]);
+  ScriptCInstruction inst = createInstruction(Iret);
+  c_context->list = createInstList(c_context->list, inst);
+  c_context->ret = 1;
 }
 
-InstList convertBREAK(Node node, InstList list) {
-  return NULL;
+void convertBREAK(Node node) {
+
 }
 
-InstList convertCONTINUE(Node node, InstList list) {
-  return NULL;
+void convertCONTINUE(Node node) {
+
 }
 
-InstList convertFOR(Node node, InstList list) {
-  return NULL;
+void convertFOR(Node node) {
+
 }
 
-InstList convertLT(Node node, InstList list) {
-  return NULL;
+void convertLT(Node node) {
+
 }
 
-InstList convertGT(Node node, InstList list) {
-  return NULL;
+void convertGT(Node node) {
+
 }
 
-InstList convertLE(Node node, InstList list) {
-  return NULL;
+void convertLE(Node node) {
+
 }
 
-InstList convertGE(Node node, InstList list) {
-  return NULL;
+void convertGE(Node node) {
+
 }
 
-InstList convertEQ(Node node, InstList list) {
-  return NULL;
+void convertEQ(Node node) {
+
 }
 
-InstList convertASSIGNADD(Node node, InstList list) {
-  return NULL;
+void convertASSIGNADD(Node node) {
+
 }
 
-InstList convertASSIGNSUB(Node node, InstList list) {
-  return NULL;
+void convertASSIGNSUB(Node node) {
+
 }
 
-InstList convertASSIGNMUL(Node node, InstList list) {
-  return NULL;
+void convertASSIGNMUL(Node node) {
+
 }
 
-InstList convertASSIGNDIV(Node node, InstList list) {
-  return NULL;
+void convertASSIGNDIV(Node node) {
+
 }
 
-InstList convertINC(Node node, InstList list) {
-  return NULL;
+void convertINC(Node node) {
+
 }
 
-InstList convertDEC(Node node, InstList list) {
-  return NULL;
+void convertDEC(Node node) {
+
 }
 
 ScriptCInstruction createISeq(InstList list) {
-  int size = id;
+  int size = 0;
+  for(int i = 0; i < module->size; i++) {
+    size += module->ctxList[i]->id;
+  }
   c_context->code_length = size;
   ScriptCInstruction insts = (ScriptCInstruction)malloc(sizeof(struct ScriptCInstruction)*size);
   ScriptCInstruction root = insts;
-  for(int i = 0; i < size; i++) {
-    insts[i] = *list->inst;
+  long index = 0;
+  for(int i = 0; i < module->size; i++) {
+    InstList list = module->ctxList[i]->root;
+    module->codePoints[i] = index;
+    for(; list; list = list->next) {
+      insts[index] = *list->inst;
+      index++;
+    }
+  }
+  for(long i = 0; i < size; i++) {
+    if(insts[i].op == Icall) {
+      insts[i].call_point = module->codePoints[insts[i].func_id];
+    }
     dumpInstruction(&insts[i], i);
-    list = list->next;
   }
   fprintf(stderr, "\n");
   return root;
 }
 
-typedef InstList (*convert_to_lir_func_t)(Node, InstList);
+typedef void (*convert_to_lir_func_t)(Node);
 static convert_to_lir_func_t f_convert[] = {
 #define DEFINE_CONVERT_FUNC(NODE) convert##NODE,
   NODE_EACH(DEFINE_CONVERT_FUNC)
 };
 
-static inline InstList convert(Node node, InstList list) {
-  return f_convert[node->type](node, list);
+static inline void convert(Node node) {
+  f_convert[node->type](node);
 }
 
-CompilerContext createCompilerContext() {
-  c_context = (CompilerContext) malloc(sizeof(struct CompilerContext));
+void setCCToModule(CompilerContext cctx);
+
+CompilerContext createCompilerContext(CompilerContext prev) {
+  c_context = (CompilerContext)malloc(sizeof(struct CompilerContext));
   c_context->vars = (VarEntry*)malloc(sizeof(VarEntry)*VAR_MAX);
+  c_context->funcs = (FuncEntry*)malloc(sizeof(FuncEntry)*FUNC_MAX);
   c_context->var_count = 0;
+  c_context->func_count = 0;
+  c_context->prev = prev;
+  c_context->ret = 0;
+  setCCToModule(c_context);
   return c_context;
 }
 
+CompilerContext disposeCompilerContext(CompilerContext ctx) {
+  for(int i = 0; i < ctx->var_count; i++) {
+    free(ctx->vars[i]);
+  }
+  free(ctx->vars);
+  for(int i = 0; i < ctx->func_count; i++) {
+    free(ctx->funcs[i]);
+  }
+  free(ctx->funcs);
+  CompilerContext prev = ctx->prev;
+  free(ctx);
+  return prev;
+}
+
+void createModule() {
+  module = (Module)malloc(sizeof(struct Module));
+  module->ctxList = (CompilerContext*)malloc(sizeof(CompilerContext)*CC_MAX);
+  module->codePoints = (long*)malloc(sizeof(long)*CC_MAX);
+  module->size = 0;
+}
+
+void setCCToModule(CompilerContext cctx) {
+  module->ctxList[module->size++] = cctx;
+  if(module->size % CC_MAX == 0) {
+    module->ctxList = (CompilerContext*)realloc(module->ctxList, sizeof(module->ctxList)*2);
+    module->codePoints = (long*)malloc(sizeof(module->codePoints)*2);
+  }
+}
+
 ScriptCInstruction compile(Node node) {
-  InstList list = createInstList(NULL, createInstruction(Iexit));
-  f_convert[node->type](node, list);
-  return createISeq(list);
+  c_context->list = createInstList(NULL, createInstruction(Iexit));
+  c_context->root = c_context->list;
+  f_convert[node->type](node);
+  c_context->list = createInstList(c_context->list, createInstruction(Iret_void));
+  return createISeq(c_context->root);
 }
