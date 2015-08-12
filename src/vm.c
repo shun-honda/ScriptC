@@ -364,16 +364,16 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
   OP(write) {
     Type val = pop_sp(ctx);
     if(val->type == TYPE_INT) {
-      printf("%d", val->int_val);
+      printf("%d\n", val->int_val);
     } else if(val->type == TYPE_FLOAT) {
-      printf("%f", val->double_val);
+      printf("%f\n", val->double_val);
     } else if(val->type == TYPE_STRING) {
-      printf("%s", val->string);
+      printf("%s\n", val->string);
     } else if(val->type == TYPE_BOOL) {
       if(val->bool_val) {
-        printf("true");
+        printf("true\n");
       } else {
-        printf("false");
+        printf("false\n");
       }
     }
     DISPATCH_NEXT;

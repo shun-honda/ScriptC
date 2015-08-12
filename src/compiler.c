@@ -70,6 +70,32 @@ static inline void setLabel(int id) {
   c_context->label_list[id] = c_context->id;
 }
 
+static inline void push_break_continue(int blabel, int clabel) {
+  c_context->bc_id++;
+  c_context->breakLabels[c_context->bc_id] = blabel;
+  c_context->continueLabels[c_context->bc_id] = clabel;
+}
+
+static inline int get_break_label() {
+  if(c_context->bc_id == -1) {
+    fprintf(stderr, "break error\n");
+    exit(1);
+  }
+  return c_context->breakLabels[c_context->bc_id];
+}
+
+static inline int get_continue_label() {
+  if(c_context->bc_id == -1) {
+    fprintf(stderr, "continue error\n");
+    exit(1);
+  }
+  return c_context->continueLabels[c_context->bc_id];
+}
+
+static inline void pop_break_continue() {
+  c_context->bc_id--;
+}
+
 ScriptCInstruction createInstruction(int op) {
   ScriptCInstruction inst = (ScriptCInstruction) malloc(sizeof(struct ScriptCInstruction));
   inst->op = op;
@@ -350,7 +376,20 @@ void convertELSE(Node node) {
 }
 
 void convertWHILE(Node node) {
-
+  int topLabel = createLabel();
+  int endLabel = createLabel();
+  push_break_continue(endLabel, topLabel);
+  setLabel(topLabel);
+  convert(node->child[0]);
+  ScriptCInstruction inst = createInstruction(Iifcmp);
+  inst->label_id = endLabel;
+  c_context->list = createInstList(c_context->list, inst);
+  convert(node->child[1]);
+  inst = createInstruction(Ijump);
+  inst->label_id = topLabel;
+  c_context->list = createInstList(c_context->list, inst);
+  setLabel(endLabel);
+  pop_break_continue();
 }
 
 void convertBLOCK(Node node) {
@@ -365,11 +404,15 @@ void convertRETURN(Node node) {
 }
 
 void convertBREAK(Node node) {
-
+  ScriptCInstruction inst = createInstruction(Ijump);
+  inst->label_id = get_break_label();
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertCONTINUE(Node node) {
-
+  ScriptCInstruction inst = createInstruction(Ijump);
+  inst->label_id = get_continue_label();
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertFOR(Node node) {
@@ -590,11 +633,14 @@ CompilerContext createCompilerContext(CompilerContext prev) {
   c_context->vars = (VarEntry*)malloc(sizeof(VarEntry)*VAR_MAX);
   c_context->funcs = (FuncEntry*)malloc(sizeof(FuncEntry)*FUNC_MAX);
   c_context->label_list = (int*)malloc(sizeof(int)*256);
+  c_context->breakLabels = (int*)malloc(sizeof(int)*256);
+  c_context->continueLabels = (int*)malloc(sizeof(int)*256);
   c_context->var_count = 0;
   c_context->func_count = 0;
   c_context->prev = prev;
   c_context->ret = 0;
   c_context->label_count = 0;
+  c_context->bc_id = -1;
   setCCToModule(c_context);
   return c_context;
 }

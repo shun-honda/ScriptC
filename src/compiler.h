@@ -56,6 +56,9 @@ struct CompilerContext {
   int* label_list;
   int label_count;
   int id;
+  int* breakLabels;
+  int* continueLabels;
+  int bc_id;
 };
 
 #define CC_MAX 128
