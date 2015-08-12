@@ -39,9 +39,12 @@ int containsFunc(char* name) {
 }
 
 FuncEntry getFuncEntry(char* name) {
-  for(int i = 0; i < c_context->func_count; i++) {
-    if(!strcmp(name, c_context->funcs[i]->name)) {
-      return c_context->funcs[i];
+  CompilerContext c_ctx = c_context;
+  for(; c_ctx; c_ctx = c_ctx->prev) {
+    for(int i = 0; i < c_ctx->func_count; i++) {
+      if(!strcmp(name, c_ctx->funcs[i]->name)) {
+        return c_ctx->funcs[i];
+      }
     }
   }
   return NULL;
