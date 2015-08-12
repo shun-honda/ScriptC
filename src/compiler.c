@@ -471,11 +471,47 @@ void convertASSIGNDIV(Node node) {
 }
 
 void convertINC(Node node) {
-
+  if(node->child[0]->type != SC_NAME) {
+    fprintf(stderr, "Error: first argument of inc expression is expected name node\n");
+    exit(1);
+  }
+  convert(node->child[0]);
+  ScriptCInstruction inst = createInstruction(Iiconst);
+  inst->int_val = 1;
+  c_context->list = createInstList(c_context->list, inst);
+  inst = createInstruction(Iadd);
+  c_context->list = createInstList(c_context->list, inst);
+  inst = createInstruction(Istorel);
+  VarEntry var = getVarEntry(node->child[0]->name);
+  if(var) {
+    inst->var_id = var->id;
+  } else {
+    inst->var_id = c_context->var_count;
+    setVarEntry(node->child[0]->name);
+  }
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertDEC(Node node) {
-
+  if(node->child[0]->type != SC_NAME) {
+    fprintf(stderr, "Error: first argument of dec expression is expected name node\n");
+    exit(1);
+  }
+  convert(node->child[0]);
+  ScriptCInstruction inst = createInstruction(Iiconst);
+  inst->int_val = 1;
+  c_context->list = createInstList(c_context->list, inst);
+  inst = createInstruction(Isub);
+  c_context->list = createInstList(c_context->list, inst);
+  inst = createInstruction(Istorel);
+  VarEntry var = getVarEntry(node->child[0]->name);
+  if(var) {
+    inst->var_id = var->id;
+  } else {
+    inst->var_id = c_context->var_count;
+    setVarEntry(node->child[0]->name);
+  }
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 ScriptCInstruction createISeq(InstList list) {
