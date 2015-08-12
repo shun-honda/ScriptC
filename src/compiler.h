@@ -29,7 +29,8 @@ struct ScriptCInstruction {
     int var_id;
     int func_id;
     long call_point;
-    struct ScriptCInstruction* jump;
+    int label_id;
+    long jump;
   };
 };
 
@@ -52,6 +53,8 @@ struct CompilerContext {
   struct CompilerContext* prev;
   struct InstList* root;
   struct InstList* list;
+  int* label_list;
+  int label_count;
   int id;
 };
 

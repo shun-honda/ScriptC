@@ -235,6 +235,9 @@ void printNode(Node node, int level) {
   if(node) {
     indent(level);
     switch (node->type) {
+      case SC_NONE:
+        printf("#None[]\n");
+        break;
       case SC_SOURCE:
         printf("#Source[\n");
         printList(node->list, level+1);

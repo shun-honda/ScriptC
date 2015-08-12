@@ -84,7 +84,7 @@ CompoundStatement
 IfStatement
   : IF Expression Block ELSE Block {$$ = createIfNode($2, $3, $5);}
   | IF Expression Block ELSE IfStatement {$$ = createIfNode($2, $3, $5);}
-  | IF Expression Block {$$ = createIfNode($2, $3, NULL);}
+  | IF Expression Block {$$ = createIfNode($2, $3, createNode(SC_NONE));}
   ;
 
 WhileStatement

@@ -59,6 +59,14 @@ void setFuncEntry(char* name, int arg_size) {
   }
 }
 
+static inline int createLabel() {
+  return c_context->label_count++;
+}
+
+static inline void setLabel(int id) {
+  c_context->label_list[id] = c_context->id;
+}
+
 ScriptCInstruction createInstruction(int op) {
   ScriptCInstruction inst = (ScriptCInstruction) malloc(sizeof(struct ScriptCInstruction));
   inst->op = op;
@@ -125,6 +133,11 @@ static void dumpInstruction(ScriptCInstruction inst, int index) {
     }
     OP_DUMPCASE(call) {
       fprintf(stderr, "%ld", inst->call_point);
+      break;
+    }
+    OP_DUMPCASE(jump)
+    OP_DUMPCASE(ifcmp) {
+      fprintf(stderr, "%ld", inst->jump);
       break;
     }
   default:
@@ -314,7 +327,19 @@ void convertPRINT(Node node) {
 }
 
 void convertIF(Node node) {
-
+  int elseLabel = createLabel();
+  int mergeLabel = createLabel();
+  convert(node->child[0]);
+  ScriptCInstruction inst = createInstruction(Iifcmp);
+  inst->label_id = elseLabel;
+  c_context->list = createInstList(c_context->list, inst);
+  convert(node->child[1]);
+  inst = createInstruction(Ijump);
+  inst->label_id = mergeLabel;
+  c_context->list = createInstList(c_context->list, inst);
+  setLabel(elseLabel);
+  convert(node->child[2]);
+  setLabel(mergeLabel);
 }
 
 void convertELSE(Node node) {
@@ -326,7 +351,7 @@ void convertWHILE(Node node) {
 }
 
 void convertBLOCK(Node node) {
-
+  convert(node->child[0]);
 }
 
 void convertRETURN(Node node) {
@@ -524,10 +549,14 @@ ScriptCInstruction createISeq(InstList list) {
   ScriptCInstruction root = insts;
   long index = 0;
   for(int i = 0; i < module->size; i++) {
-    InstList list = module->ctxList[i]->root;
+    CompilerContext c_ctx = module->ctxList[i];
+    InstList list = c_ctx->root;
     module->codePoints[i] = index;
     for(; list; list = list->next) {
       insts[index] = *list->inst;
+      if(insts[index].op == Ijump || insts[index].op == Iifcmp) {
+        insts[index].jump = module->codePoints[i] + c_ctx->label_list[insts[index].label_id];
+      }
       index++;
     }
   }
@@ -557,10 +586,12 @@ CompilerContext createCompilerContext(CompilerContext prev) {
   c_context = (CompilerContext)malloc(sizeof(struct CompilerContext));
   c_context->vars = (VarEntry*)malloc(sizeof(VarEntry)*VAR_MAX);
   c_context->funcs = (FuncEntry*)malloc(sizeof(FuncEntry)*FUNC_MAX);
+  c_context->label_list = (int*)malloc(sizeof(int)*256);
   c_context->var_count = 0;
   c_context->func_count = 0;
   c_context->prev = prev;
   c_context->ret = 0;
+  c_context->label_count = 0;
   setCCToModule(c_context);
   return c_context;
 }

@@ -142,10 +142,17 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
 
   }
   OP(jump) {
-
+    JUMP(inst + pc->jump);
   }
   OP(ifcmp) {
-
+    Type top = pop_sp(ctx);
+    if(top->type != TYPE_BOOL) {
+      fprintf(stderr, "type error of ifcmp\n");
+    }
+    if(!top->bool_val) {
+      JUMP(inst + pc->jump);
+    }
+    DISPATCH_NEXT;
   }
   OP(gt) {
     Type right = pop_sp(ctx);
@@ -335,12 +342,16 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
     Type top = pop_sp(ctx);
     if(top->type == TYPE_INT) {
       val->int_val = top->int_val;
+      val->type = TYPE_INT;
     } else if(top->type == TYPE_FLOAT) {
       val->double_val = top->double_val;
+      val->type = TYPE_FLOAT;
     } else if(top->type == TYPE_STRING) {
       val->string = top->string;
+      val->type = TYPE_STRING;
     } else if(top->type == TYPE_BOOL) {
       val->bool_val = top->bool_val;
+      val->type = TYPE_BOOL;
     } else {
       fprintf(stderr, "type error of storel\n");
       return 1;
