@@ -349,23 +349,45 @@ void convertFOR(Node node) {
 }
 
 void convertLT(Node node) {
-
+  convert(node->child[0]);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Ilt);
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertGT(Node node) {
-
+  convert(node->child[0]);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Igt);
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertLE(Node node) {
-
+  convert(node->child[0]);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Ile);
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertGE(Node node) {
-
+  convert(node->child[0]);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Ige);
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertEQ(Node node) {
+  convert(node->child[0]);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Ieq);
+  c_context->list = createInstList(c_context->list, inst);
+}
 
+void convertNE(Node node) {
+  convert(node->child[0]);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Ine);
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertASSIGNADD(Node node) {

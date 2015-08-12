@@ -95,26 +95,28 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
   OP(ret) {
     long retPoint = ctx->retPoint;
     Type top = pop_sp(ctx);
-    ctx = call_back(ctx);
+    VMContext next = call_back(ctx);
     if(top->type == TYPE_INT) {
-      push_i(ctx, top->int_val);
+      push_i(next, top->int_val);
     } else if(top->type == TYPE_FLOAT) {
-      push_d(ctx, top->double_val);
+      push_d(next, top->double_val);
     } else if(top->type == TYPE_STRING) {
-      push_s(ctx, top->string);
+      push_s(next, top->string);
     } else if(top->type == TYPE_BOOL) {
-      push_b(ctx, top->bool_val);
+      push_b(next, top->bool_val);
     } else {
       fprintf(stderr, "type error of return statement\n");
       return 1;
     }
     disposeVMContext(ctx);
+    ctx = next;
     JUMP(inst + retPoint);
   }
   OP(ret_void) {
     long retPoint = ctx->retPoint;
-    ctx = call_back(ctx);
+    VMContext next = call_back(ctx);
     disposeVMContext(ctx);
+    ctx = next;
     JUMP(inst + retPoint);
   }
   OP(iconst) {
@@ -146,22 +148,90 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
 
   }
   OP(gt) {
-
+    Type right = pop_sp(ctx);
+    Type left = pop_sp(ctx);
+    if(right->type == TYPE_INT && left->type == TYPE_INT) {
+      push_b(ctx, left->int_val > right->int_val);
+    } else if(right->type == TYPE_FLOAT && left->type == TYPE_FLOAT) {
+      push_b(ctx, left->double_val > right->double_val);
+    } else {
+      fprintf(stderr, "type error of gt expression\n");
+      return 1;
+    }
+    DISPATCH_NEXT;
   }
   OP(ge) {
-
+    Type right = pop_sp(ctx);
+    Type left = pop_sp(ctx);
+    if(right->type == TYPE_INT && left->type == TYPE_INT) {
+      push_b(ctx, left->int_val >= right->int_val);
+    } else if(right->type == TYPE_FLOAT && left->type == TYPE_FLOAT) {
+      push_b(ctx, left->double_val >= right->double_val);
+    } else {
+      fprintf(stderr, "type error of ge expression\n");
+      return 1;
+    }
+    DISPATCH_NEXT;
   }
   OP(lt) {
-
+    Type right = pop_sp(ctx);
+    Type left = pop_sp(ctx);
+    if(right->type == TYPE_INT && left->type == TYPE_INT) {
+      push_b(ctx, left->int_val < right->int_val);
+    } else if(right->type == TYPE_FLOAT && left->type == TYPE_FLOAT) {
+      push_b(ctx, left->double_val < right->double_val);
+    } else {
+      fprintf(stderr, "type error of lt expression\n");
+      return 1;
+    }
+    DISPATCH_NEXT;
   }
   OP(le) {
-
+    Type right = pop_sp(ctx);
+    Type left = pop_sp(ctx);
+    if(right->type == TYPE_INT && left->type == TYPE_INT) {
+      push_b(ctx, left->int_val <= right->int_val);
+    } else if(right->type == TYPE_FLOAT && left->type == TYPE_FLOAT) {
+      push_b(ctx, left->double_val <= right->double_val);
+    } else {
+      fprintf(stderr, "type error of le expression\n");
+      return 1;
+    }
+    DISPATCH_NEXT;
   }
   OP(eq) {
-
+    Type right = pop_sp(ctx);
+    Type left = pop_sp(ctx);
+    if(right->type == TYPE_INT && left->type == TYPE_INT) {
+      push_b(ctx, left->int_val == right->int_val);
+    } else if(right->type == TYPE_FLOAT && left->type == TYPE_FLOAT) {
+      push_b(ctx, left->double_val == right->double_val);
+    } else if(right->type == TYPE_STRING && left->type == TYPE_STRING) {
+      push_b(ctx, !strcmp(left->string, right->string));
+    } else if(right->type == TYPE_BOOL && left->type == TYPE_BOOL) {
+      push_b(ctx, left->bool_val == right->bool_val);
+    } else {
+      fprintf(stderr, "type error of le expression\n");
+      return 1;
+    }
+    DISPATCH_NEXT;
   }
   OP(ne) {
-
+    Type right = pop_sp(ctx);
+    Type left = pop_sp(ctx);
+    if(right->type == TYPE_INT && left->type == TYPE_INT) {
+      push_b(ctx, left->int_val != right->int_val);
+    } else if(right->type == TYPE_FLOAT && left->type == TYPE_FLOAT) {
+      push_b(ctx, left->double_val != right->double_val);
+    } else if(right->type == TYPE_STRING && left->type == TYPE_STRING) {
+      push_b(ctx, strcmp(left->string, right->string));
+    } else if(right->type == TYPE_BOOL && left->type == TYPE_BOOL) {
+      push_b(ctx, left->bool_val != right->bool_val);
+    } else {
+      fprintf(stderr, "type error of le expression\n");
+      return 1;
+    }
+    DISPATCH_NEXT;
   }
   OP(add) {
     Type right = pop_sp(ctx);
@@ -295,6 +365,7 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
         printf("false");
       }
     }
+    DISPATCH_NEXT;
   }
 
   return 0;

@@ -33,12 +33,13 @@
 #define SC_LE 29
 #define SC_GE 30
 #define SC_EQ 31
-#define SC_ASSIGNADD 32
-#define SC_ASSIGNSUB 33
-#define SC_ASSIGNMUL 34
-#define SC_ASSIGNDIV 35
-#define SC_INC 36
-#define SC_DEC 37
+#define SC_NE 32
+#define SC_ASSIGNADD 33
+#define SC_ASSIGNSUB 34
+#define SC_ASSIGNMUL 35
+#define SC_ASSIGNDIV 36
+#define SC_INC 37
+#define SC_DEC 38
 
 #define NODE_EACH(NODE)\
   NODE(NONE)\
@@ -73,6 +74,7 @@
   NODE(LE)\
   NODE(GE)\
   NODE(EQ)\
+  NODE(NE)\
   NODE(ASSIGNADD)\
   NODE(ASSIGNSUB)\
   NODE(ASSIGNMUL)\

@@ -20,7 +20,7 @@ int yylex(void);
 
 %start Program
 %token DEF PRINT IF ELSE WHILE RETURN BREAK CONTINUE FOR
-%token LE GE EQ ADDEQ SUBEQ MULEQ DIVEQ INC DEC
+%token LE GE EQ NE ADDEQ SUBEQ MULEQ DIVEQ INC DEC
 %token<node> IDENTIFIER NONE TRUE FALSE INT FLOAT STRING
 
 %type<node> Program Source
@@ -141,6 +141,7 @@ CompExpression
   : CompExpression '<' ArithExpr {$$ = createExprNode(SC_LT, $1, $3);}
   | CompExpression '>' ArithExpr {$$ = createExprNode(SC_GT, $1, $3);}
   | CompExpression EQ ArithExpr {$$ = createExprNode(SC_EQ, $1, $3);}
+  | CompExpression NE ArithExpr {$$ = createExprNode(SC_NE, $1, $3);}
   | CompExpression LE ArithExpr {$$ = createExprNode(SC_LE, $1, $3);}
   | CompExpression GE ArithExpr {$$ = createExprNode(SC_GE, $1, $3);}
   | ArithExpr {$$ = $1;}

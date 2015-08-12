@@ -369,6 +369,13 @@ void printNode(Node node, int level) {
         indent(level);
         printf("]\n");
         break;
+      case SC_NE:
+        printf("#NE\n");
+        printNode(node->child[0], level+1);
+        printNode(node->child[1], level+1);
+        indent(level);
+        printf("]\n");
+        break;
       case SC_FUNCDEF:
         printf("#FuncDef\n");
         printNode(node->child[0], level+1);

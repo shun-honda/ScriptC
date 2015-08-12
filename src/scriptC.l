@@ -38,6 +38,7 @@ space [ \t\n]*
 "<=" return LE;
 ">=" return GE;
 "==" return EQ;
+"!=" return NE;
 "<" return '<';
 ">" return '>';
 "=" return '=';
