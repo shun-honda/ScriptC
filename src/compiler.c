@@ -290,7 +290,7 @@ void convertSOURCE(Node node) {
 
 void convertFUNCCALL(Node node) {
   if(node->child[0]->type != SC_NAME) {
-    fprintf(stderr, "Error: first argument of assign expression is expected name node\n");
+    fprintf(stderr, "Error: first argument of function definition is expected name node\n");
     exit(1);
   }
   FuncEntry func = getFuncEntry(node->child[0]->name);
@@ -391,19 +391,83 @@ void convertNE(Node node) {
 }
 
 void convertASSIGNADD(Node node) {
-
+  if(node->child[0]->type != SC_NAME) {
+    fprintf(stderr, "Error: first argument of assign expression is expected name node\n");
+    exit(1);
+  }
+  convert(node->child[0]);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Iadd);
+  c_context->list = createInstList(c_context->list, inst);
+  inst = createInstruction(Istorel);
+  VarEntry var = getVarEntry(node->child[0]->name);
+  if(var) {
+    inst->var_id = var->id;
+  } else {
+    inst->var_id = c_context->var_count;
+    setVarEntry(node->child[0]->name);
+  }
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertASSIGNSUB(Node node) {
-
+  if(node->child[0]->type != SC_NAME) {
+    fprintf(stderr, "Error: first argument of assign expression is expected name node\n");
+    exit(1);
+  }
+  convert(node->child[0]);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Isub);
+  c_context->list = createInstList(c_context->list, inst);
+  inst = createInstruction(Istorel);
+  VarEntry var = getVarEntry(node->child[0]->name);
+  if(var) {
+    inst->var_id = var->id;
+  } else {
+    inst->var_id = c_context->var_count;
+    setVarEntry(node->child[0]->name);
+  }
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertASSIGNMUL(Node node) {
-
+  if(node->child[0]->type != SC_NAME) {
+    fprintf(stderr, "Error: first argument of assign expression is expected name node\n");
+    exit(1);
+  }
+  convert(node->child[0]);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Imul);
+  c_context->list = createInstList(c_context->list, inst);
+  inst = createInstruction(Istorel);
+  VarEntry var = getVarEntry(node->child[0]->name);
+  if(var) {
+    inst->var_id = var->id;
+  } else {
+    inst->var_id = c_context->var_count;
+    setVarEntry(node->child[0]->name);
+  }
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertASSIGNDIV(Node node) {
-
+  if(node->child[0]->type != SC_NAME) {
+    fprintf(stderr, "Error: first argument of assign expression is expected name node\n");
+    exit(1);
+  }
+  convert(node->child[0]);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Idiv);
+  c_context->list = createInstList(c_context->list, inst);
+  inst = createInstruction(Istorel);
+  VarEntry var = getVarEntry(node->child[0]->name);
+  if(var) {
+    inst->var_id = var->id;
+  } else {
+    inst->var_id = c_context->var_count;
+    setVarEntry(node->child[0]->name);
+  }
+  c_context->list = createInstList(c_context->list, inst);
 }
 
 void convertINC(Node node) {
