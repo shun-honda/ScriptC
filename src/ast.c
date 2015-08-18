@@ -217,9 +217,117 @@ Node createReturnNode(Node child) {
 
 void disposeNode(Node node) {
   if(node) {
-    int size = node->child_size;
-    for(int i = 0; i < size; i++) {
-      disposeNode(node->child[i]);
+    switch (node->type) {
+      case SC_SOURCE:
+        disposeList(node->list);
+        break;
+      case SC_ADD:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_SUB:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_MUL:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_DIV:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_PLUS:
+        disposeNode(node->child[0]);
+        break;
+      case SC_MINUS:
+        disposeNode(node->child[0]);
+        break;
+      case SC_ASSIGNADD:
+        disposeNode(node->child[0]);
+        break;
+      case SC_ASSIGNSUB:
+        disposeNode(node->child[0]);
+        break;
+      case SC_ASSIGNMUL:
+        disposeNode(node->child[0]);
+        break;
+      case SC_ASSIGNDIV:
+        disposeNode(node->child[0]);
+        break;
+      case SC_INC:
+        disposeNode(node->child[0]);
+        break;
+      case SC_DEC:
+        disposeNode(node->child[0]);
+        break;
+      case SC_LT:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_GT:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_LE:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_GE:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_EQ:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_NE:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_FUNCDEF:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        disposeNode(node->child[2]);
+        break;
+      case SC_ARGS:
+        disposeList(node->list);
+        break;
+      case SC_STATEMENTLIST:
+        disposeList(node->list);
+        break;
+      case SC_ASSIGN:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_FUNCCALL:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_PRINT:
+        disposeNode(node->child[0]);
+        break;
+      case SC_IF:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        disposeNode(node->child[2]);
+        break;
+      case SC_WHILE:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        break;
+      case SC_FOR:
+        disposeNode(node->child[0]);
+        disposeNode(node->child[1]);
+        disposeNode(node->child[2]);
+        disposeNode(node->child[3]);
+        break;
+      case SC_BLOCK:
+        disposeNode(node->child[0]);
+        break;
+      case SC_RETURN:
+        disposeNode(node->child[0]);
+        break;
     }
     free(node);
   }
