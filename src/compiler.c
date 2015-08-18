@@ -423,7 +423,24 @@ void convertCONTINUE(Node node) {
 }
 
 void convertFOR(Node node) {
-
+  convert(node->child[0]);
+  int topLabel = createLabel();
+  int endLabel = createLabel();
+  int continueLabel = createLabel();
+  push_break_continue(endLabel, continueLabel);
+  setLabel(topLabel);
+  convert(node->child[1]);
+  ScriptCInstruction inst = createInstruction(Iifcmp);
+  inst->label_id = endLabel;
+  c_context->list = createInstList(c_context->list, inst);
+  convert(node->child[3]);
+  setLabel(continueLabel);
+  convert(node->child[2]);
+  inst = createInstruction(Ijump);
+  inst->label_id = topLabel;
+  c_context->list = createInstList(c_context->list, inst);
+  setLabel(endLabel);
+  pop_break_continue();
 }
 
 void convertLT(Node node) {
