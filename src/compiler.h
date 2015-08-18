@@ -77,5 +77,6 @@ void createModule();
 CompilerContext createCompilerContext(CompilerContext prev);
 CompilerContext disposeCompilerContext(CompilerContext ctx);
 ScriptCInstruction compile(Node node);
+void disposeInstruction(ScriptCInstruction inst);
 
 #endif

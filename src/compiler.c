@@ -114,6 +114,13 @@ InstList createInstList(InstList prev, ScriptCInstruction inst) {
   return list;
 }
 
+void disposeInstList(InstList list) {
+  for(; list; list = list->next) {
+    free(list->inst);
+    free(list);
+  }
+}
+
 static const char *get_opname(uint8_t opcode) {
   switch (opcode) {
 #define OP_DUMPCASE(OP) \
@@ -605,6 +612,7 @@ ScriptCInstruction createISeq(InstList list) {
       }
       index++;
     }
+    disposeInstList(c_ctx->root);
   }
   for(long i = 0; i < size; i++) {
     if(insts[i].op == Icall) {
@@ -654,6 +662,9 @@ CompilerContext disposeCompilerContext(CompilerContext ctx) {
     free(ctx->funcs[i]);
   }
   free(ctx->funcs);
+  free(ctx->label_list);
+  free(ctx->breakLabels);
+  free(ctx->continueLabels);
   CompilerContext prev = ctx->prev;
   free(ctx);
   return prev;
@@ -670,7 +681,7 @@ void setCCToModule(CompilerContext cctx) {
   module->ctxList[module->size++] = cctx;
   if(module->size % CC_MAX == 0) {
     module->ctxList = (CompilerContext*)realloc(module->ctxList, sizeof(module->ctxList)*2);
-    module->codePoints = (long*)malloc(sizeof(module->codePoints)*2);
+    module->codePoints = (long*)realloc(module->codePoints, sizeof(module->codePoints)*2);
   }
 }
 
@@ -680,4 +691,8 @@ ScriptCInstruction compile(Node node) {
   f_convert[node->type](node);
   c_context->list = createInstList(c_context->list, createInstruction(Iret_void));
   return createISeq(c_context->root);
+}
+
+void disposeInstruction(ScriptCInstruction inst) {
+  free(inst);
 }

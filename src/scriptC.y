@@ -257,5 +257,7 @@ int main(int argc, char *const argv[])
     prepareVM(ctx, insts, cctx->code_length);
     vm_execute(ctx, insts);
     disposeNode(ast);
+    disposeInstruction(insts);
+    fclose(yyin);
     return 0;
 }
