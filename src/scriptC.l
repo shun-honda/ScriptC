@@ -13,7 +13,7 @@ int yywrap(void) {
 %x SINGLE_STRING
 %x DOUBLE_STRING
 
-space [ \t\n]*
+space [ \t\r\n]*
 
 %%
 
