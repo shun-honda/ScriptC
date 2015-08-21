@@ -216,6 +216,8 @@ yyerror(char const *str)
     return 0;
 }
 
+int sc_debug;
+
 int main(int argc, char *const argv[])
 {
     extern int yyparse(void);
@@ -225,8 +227,9 @@ int main(int argc, char *const argv[])
     int input_size = 0;
     const char *orig_argv0 = argv[0];
     int opt;
+    sc_debug = 0;
 
-    while ((opt = getopt(argc, argv, "p:i:t:o:c:h:")) != -1) {
+    while ((opt = getopt(argc, argv, "i:gh")) != -1) {
       switch (opt) {
         case 'i':
           input_file = optarg;
@@ -236,8 +239,15 @@ int main(int argc, char *const argv[])
       		}
           break;
         case 'h':
-          printf("help");
+          fprintf(stderr, "Usage: ./scriptC [option] ...\n");
+          fprintf(stderr, "Options and argument:\n");
+          fprintf(stderr, "-i $file : program read script file\n");
+          fprintf(stderr, "-g       : program print debug infomation\n");
+          fprintf(stderr, "-h       : program print this infomation\n");
           return 0;
+        case 'g':
+          sc_debug = 1;
+          break;
         default: /* '?' */
           yyin = stdin;
           break;
@@ -249,7 +259,11 @@ int main(int argc, char *const argv[])
         exit(1);
     }
 
-    printNode(ast, 0);
+    if(sc_debug) {
+      fprintf(stderr, "@@@@ Dump AST @@@@\n");
+      printNode(ast, 0);
+      fprintf(stderr, "\n");
+    }
     createModule();
     CompilerContext cctx = createCompilerContext(NULL);
     ScriptCInstruction insts = compile(ast);

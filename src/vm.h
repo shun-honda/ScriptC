@@ -1,6 +1,8 @@
 #ifndef __VM__
 #define __VM__
 
+extern int sc_debug;
+
 #define IR_EACH(OP)\
 	OP(exit)\
 	OP(call)\

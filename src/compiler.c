@@ -631,13 +631,20 @@ ScriptCInstruction createISeq(InstList list) {
     }
     disposeInstList(c_ctx->root);
   }
+  if(sc_debug) {
+    fprintf(stderr, "@@@@ Dump ByteCode @@@@\n");
+  }
   for(long i = 0; i < size; i++) {
     if(insts[i].op == Icall) {
       insts[i].call_point = module->codePoints[insts[i].func_id];
     }
-    dumpInstruction(&insts[i], i);
+    if(sc_debug) {
+      dumpInstruction(&insts[i], i);
+    }
   }
-  fprintf(stderr, "\n");
+  if(sc_debug) {
+    fprintf(stderr, "\n");
+  }
   return root;
 }
 
