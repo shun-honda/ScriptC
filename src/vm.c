@@ -289,14 +289,17 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
     }
     DISPATCH_NEXT;
   }
-  OP(plus) {
-
-  }
   OP(minus) {
-
-  }
-  OP(loada) {
-
+    Type left = pop_sp(ctx);
+    if(left->type == TYPE_INT) {
+      push_i(ctx, -left->int_val);
+    } else if(left->type == TYPE_FLOAT) {
+      push_d(ctx, -left->double_val);
+    } else {
+      fprintf(stderr, "type error of add expression\n");
+      return 1;
+    }
+    DISPATCH_NEXT;
   }
   OP(loadl) {
     Type val = ctx->var_list+pc->var_id;
@@ -351,9 +354,6 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
       return 1;
     }
     DISPATCH_NEXT;
-  }
-  OP(read) {
-
   }
   OP(write) {
     Type val = pop_sp(ctx);

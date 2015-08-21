@@ -573,8 +573,6 @@ void printNode(Node node, int level) {
         indent(level);
         printf("]\n");
         break;
-      case SC_ELSE:
-        break;
       case SC_WHILE:
         printf("#While\n");
         printNode(node->child[0], level+1);

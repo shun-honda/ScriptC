@@ -22,13 +22,10 @@
 	OP(sub)\
 	OP(mul)\
 	OP(div)\
-	OP(plus)\
   OP(minus)\
-  OP(loada)\
   OP(loadl)\
   OP(storea)\
   OP(storel)\
-  OP(read)\
   OP(write)
 
 enum nezvm_opcode {
