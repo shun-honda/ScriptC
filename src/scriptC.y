@@ -211,67 +211,67 @@ CallArgs
 int
 yyerror(char const *str)
 {
-    extern char *yytext;
-    fprintf(stderr, "parser error near %s\n", yytext);
-    return 0;
+  extern char *yytext;
+  fprintf(stderr, "parser error near %s\n", yytext);
+  return 0;
 }
 
 int sc_debug;
 
 int main(int argc, char *const argv[])
 {
-    extern int yyparse(void);
-    extern FILE *yyin;
-    extern Node ast;
-    const char *input_file = NULL;
-    int input_size = 0;
-    const char *orig_argv0 = argv[0];
-    int opt;
-    sc_debug = 0;
+  extern int yyparse(void);
+  extern FILE *yyin;
+  extern Node ast;
+  const char *input_file = NULL;
+  int input_size = 0;
+  const char *orig_argv0 = argv[0];
+  int opt;
+  sc_debug = 0;
 
-    while ((opt = getopt(argc, argv, "i:gh")) != -1) {
-      switch (opt) {
-        case 'i':
-          input_file = optarg;
-      		if (!(yyin = fopen(input_file, "r"))) {
-      			fprintf(stderr, "File [%s] is not found!\n", argv[1]);
-      			return 1;
-      		}
-          break;
-        case 'h':
-          fprintf(stderr, "Usage: ./scriptC [option] ...\n");
-          fprintf(stderr, "Options and argument:\n");
-          fprintf(stderr, "-i $file : program read script file\n");
-          fprintf(stderr, "-g       : program print debug infomation\n");
-          fprintf(stderr, "-h       : program print this infomation\n");
-          return 0;
-        case 'g':
-          sc_debug = 1;
-          break;
-        default: /* '?' */
-          yyin = stdin;
-          break;
-      }
+  while ((opt = getopt(argc, argv, "i:gh")) != -1) {
+    switch (opt) {
+      case 'i':
+        input_file = optarg;
+    		if (!(yyin = fopen(input_file, "r"))) {
+    			fprintf(stderr, "File [%s] is not found!\n", argv[1]);
+    			return 1;
+    		}
+        break;
+      case 'h':
+        fprintf(stderr, "Usage: ./scriptC [option] ...\n");
+        fprintf(stderr, "Options and argument:\n");
+        fprintf(stderr, "-i $file : program read script file\n");
+        fprintf(stderr, "-g       : program print debug infomation\n");
+        fprintf(stderr, "-h       : program print this infomation\n");
+        return 0;
+      case 'g':
+        sc_debug = 1;
+        break;
+      default: /* '?' */
+        yyin = stdin;
+        break;
     }
+  }
 
-    if (yyparse()) {
-        fprintf(stderr, "Error ! Error ! Error !\n");
-        exit(1);
-    }
+  if (yyparse()) {
+      fprintf(stderr, "Error ! Error ! Error !\n");
+      exit(1);
+  }
 
-    if(sc_debug) {
-      fprintf(stderr, "@@@@ Dump AST @@@@\n");
-      printNode(ast, 0);
-      fprintf(stderr, "\n");
-    }
-    createModule();
-    CompilerContext cctx = createCompilerContext(NULL);
-    ScriptCInstruction insts = compile(ast);
-    VMContext ctx = createVMContext(NULL, 0);
-    prepareVM(ctx, insts, cctx->code_length);
-    vm_execute(ctx, insts);
-    disposeNode(ast);
-    disposeInstruction(insts);
-    fclose(yyin);
-    return 0;
+  if(sc_debug) {
+    fprintf(stderr, "@@@@ Dump AST @@@@\n");
+    printNode(ast, 0);
+    fprintf(stderr, "\n");
+  }
+  createModule();
+  CompilerContext cctx = createCompilerContext(NULL);
+  ScriptCInstruction insts = compile(ast);
+  VMContext ctx = createVMContext(NULL, 0);
+  prepareVM(ctx, insts, cctx->code_length);
+  vm_execute(ctx, insts);
+  disposeNode(ast);
+  disposeInstruction(insts);
+  fclose(yyin);
+  return 0;
 }
