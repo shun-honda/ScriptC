@@ -135,12 +135,6 @@ long vm_execute(VMContext ctx, ScriptCInstruction inst) {
     push_b(ctx, pc->bool_val);
     DISPATCH_NEXT;
   }
-  OP(peek) {
-
-  }
-  OP(pop) {
-
-  }
   OP(jump) {
     JUMP(inst + pc->jump);
   }

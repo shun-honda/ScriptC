@@ -10,8 +10,6 @@
   OP(dconst)\
   OP(sconst)\
   OP(bconst)\
-	OP(peek)\
-	OP(pop)\
 	OP(jump)\
 	OP(ifcmp)\
 	OP(gt)\
